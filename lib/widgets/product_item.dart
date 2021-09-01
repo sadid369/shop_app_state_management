@@ -1,38 +1,46 @@
 import 'package:flutter/material.dart';
+import 'package:shop_app_state_management/provider/product.dart';
 import 'package:shop_app_state_management/screens/product_detail_screen.dart';
+import 'package:provider/provider.dart';
 
 class ProductItem extends StatelessWidget {
-  final String id;
-  final String title;
-  final String imageUrl;
-  const ProductItem({
-    required this.id,
-    required this.title,
-    required this.imageUrl,
-  });
+  // final String id;
+  // final String title;
+  // final String imageUrl;
+  // const ProductItem({
+  //   required this.id,
+  //   required this.title,
+  //   required this.imageUrl,
+  // });
 
   @override
   Widget build(BuildContext context) {
+    final product = Provider.of<Product>(context, listen: true);
+    print('ProductItem');
     return ClipRRect(
       borderRadius: BorderRadius.circular(10),
       child: GridTile(
         child: GestureDetector(
           onTap: () {
-            Navigator.of(context)
-                .pushNamed(ProductDetailScreen.routeName, arguments: id);
+            Navigator.of(context).pushNamed(ProductDetailScreen.routeName,
+                arguments: product.id);
           },
           child: Image.network(
-            imageUrl,
+            product.imageUrl,
             fit: BoxFit.cover,
           ),
         ),
         footer: GridTileBar(
           backgroundColor: Colors.black87,
-          leading: IconButton(
-            onPressed: () {},
-            icon: Icon(
-              Icons.favorite,
-              color: Theme.of(context).accentColor,
+          leading: Consumer<Product>(
+            builder: (ctx, product, child) => IconButton(
+              icon: Icon(
+                product.isFavorite ? Icons.favorite : Icons.favorite_border,
+                color: Theme.of(context).accentColor,
+              ),
+              onPressed: () {
+                product.toggleIsFavorite();
+              },
             ),
           ),
           trailing: IconButton(
@@ -43,7 +51,7 @@ class ProductItem extends StatelessWidget {
             onPressed: () {},
           ),
           title: Text(
-            title,
+            product.title,
             textAlign: TextAlign.center,
           ),
         ),
