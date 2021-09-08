@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shop_app_state_management/provider/cart.dart';
+import 'package:shop_app_state_management/provider/cart.dart' show Cart;
+import 'package:shop_app_state_management/provider/orders.dart';
+import 'package:shop_app_state_management/screens/order_screen.dart';
+import 'package:shop_app_state_management/widgets/cart_item.dart';
 
 class CartScreen extends StatelessWidget {
   static const nameRoute = '/cart';
@@ -37,13 +40,31 @@ class CartScreen extends StatelessWidget {
                     backgroundColor: Theme.of(context).primaryColor,
                   ),
                   FlatButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Provider.of<Orders>(context, listen: false).addOrders(
+                            cart.item.values.toList(), cart.totalAmount);
+                        cart.clear();
+                      },
                       child: Text(
                         'Order Now',
                         style: TextStyle(color: Theme.of(context).primaryColor),
                       ))
                 ],
               ),
+            ),
+          ),
+          SizedBox(
+            height: 10,
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: cart.item.length,
+              itemBuilder: (ctx, i) => CartItem(
+                  productId: cart.item.keys.toList()[i],
+                  id: cart.item.values.toList()[i].id,
+                  price: cart.item.values.toList()[i].price,
+                  quantity: cart.item.values.toList()[i].quantity,
+                  title: cart.item.values.toList()[i].title),
             ),
           ),
         ],
