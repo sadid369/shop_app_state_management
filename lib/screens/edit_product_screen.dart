@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shop_app_state_management/provider/product.dart';
+import 'package:provider/provider.dart';
+import 'package:shop_app_state_management/provider/products.dart';
 
 class EditProductScreen extends StatefulWidget {
   static const routeName = 'edit-product-screen';
@@ -33,16 +35,25 @@ class _EditProductScreenState extends State<EditProductScreen> {
 
   void _updateImageUrl() {
     if (!_imageUrlFocusNode.hasFocus) {
+      if ((_imageUrlControler.text.startsWith('http') == false &&
+              _imageUrlControler.text.startsWith('https') == false) ||
+          (_imageUrlControler.text.startsWith('.png') == false &&
+              _imageUrlControler.text.startsWith('.jpg') == false &&
+              _imageUrlControler.text.startsWith('.jpeg') == false)) {
+        return;
+      }
       setState(() {});
     }
   }
 
   void _saveFrom() {
+    final isValid = _fromKey.currentState?.validate();
+    if (!isValid!) {
+      return;
+    }
     _fromKey.currentState?.save();
-    print(_editedProduct.title);
-    print(_editedProduct.price);
-    print(_editedProduct.description);
-    print(_editedProduct.imageUrl);
+    Provider.of<Products>(context, listen: false).addProduct(_editedProduct);
+    Navigator.of(context).pop();
   }
 
   @override
@@ -74,6 +85,12 @@ class _EditProductScreenState extends State<EditProductScreen> {
                         price: _editedProduct.price,
                         imageUrl: _editedProduct.imageUrl);
                   },
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return 'Please enter a title';
+                    }
+                    return null;
+                  },
                   decoration: InputDecoration(
                     labelText: 'Title',
                   ),
@@ -90,6 +107,18 @@ class _EditProductScreenState extends State<EditProductScreen> {
                         description: _editedProduct.description,
                         price: double.parse(value!),
                         imageUrl: _editedProduct.imageUrl);
+                  },
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return 'please enter a price';
+                    }
+                    if (double.tryParse(value) == null) {
+                      return 'Please Enter a Valid Number';
+                    }
+                    if (double.parse(value) <= 0) {
+                      return 'Please Enter A number greater then 0';
+                    }
+                    return null;
                   },
                   decoration: InputDecoration(labelText: 'Price'),
                   textInputAction: TextInputAction.next,
@@ -111,6 +140,15 @@ class _EditProductScreenState extends State<EditProductScreen> {
                   decoration: InputDecoration(
                     labelText: 'Description',
                   ),
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return 'Please enter a description';
+                    }
+                    if (value.length < 10) {
+                      return 'Sholud be at least 10 characters long';
+                    }
+                    return null;
+                  },
                   keyboardType: TextInputType.multiline,
                   maxLines: 3,
                   focusNode: _descriptionFocusNode,
@@ -122,11 +160,11 @@ class _EditProductScreenState extends State<EditProductScreen> {
                       child: _imageUrlControler.text.isEmpty
                           ? Text('Enter a Image Url')
                           : FittedBox(
-                            child: Image.network(
+                              child: Image.network(
                                 _imageUrlControler.text,
                                 fit: BoxFit.cover,
                               ),
-                          ),
+                            ),
                       margin: EdgeInsets.only(top: 8, right: 10),
                       height: 100,
                       width: 100,
@@ -139,6 +177,21 @@ class _EditProductScreenState extends State<EditProductScreen> {
                     ),
                     Expanded(
                       child: TextFormField(
+                        validator: (value) {
+                          if (value!.isEmpty) {
+                            return 'Please Enter a Image URL';
+                          }
+                          if (value.startsWith('http') == false &&
+                              value.startsWith('https') == false) {
+                            return ' Please Enter a Valid URL';
+                          }
+                          if (value.endsWith('.png') == false &&
+                              value.endsWith('.jpeg') == false &&
+                              value.endsWith('.jpg') == false) {
+                            return 'Please enter a vaild URL';
+                          }
+                          return null;
+                        },
                         onSaved: (value) {
                           _editedProduct = Product(
                               id: _editedProduct.id,
