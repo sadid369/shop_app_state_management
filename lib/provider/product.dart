@@ -1,4 +1,6 @@
 import 'package:flutter/cupertino.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class Product extends ChangeNotifier {
   final String? id;
@@ -16,8 +18,28 @@ class Product extends ChangeNotifier {
     this.isFavorite = false,
   });
 
-  void toggleIsFavorite() {
+  void _setFavValue(bool oldStatus) {
+    isFavorite = oldStatus;
+    notifyListeners();
+  }
+
+  Future<void> toggleIsFavorite() async {
+    final oldStatus = isFavorite;
     isFavorite = !isFavorite;
     notifyListeners();
+    final url =
+        'https://shopapp2-38b15-default-rtdb.asia-southeast1.firebasedatabase.app/products/$id.json';
+    try {
+      final response = await http.patch(Uri.parse(url),
+          body: json.encode({
+            'isFavorite': isFavorite,
+          }));
+
+      if (response.statusCode >= 400) {
+        _setFavValue(oldStatus);
+      }
+    } catch (error) {
+      _setFavValue(oldStatus);
+    }
   }
 }
