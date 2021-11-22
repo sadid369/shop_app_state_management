@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:shop_app_state_management/provider/auth.dart';
 import 'package:shop_app_state_management/provider/cart.dart';
 import 'package:shop_app_state_management/provider/orders.dart';
 import 'package:shop_app_state_management/provider/product.dart';
 import 'package:shop_app_state_management/provider/products.dart';
+import 'package:shop_app_state_management/screens/auth_screen.dart';
 import 'package:shop_app_state_management/screens/cart_screen.dart';
 import 'package:shop_app_state_management/screens/edit_product_screen.dart';
 import 'package:shop_app_state_management/screens/order_screen.dart';
@@ -22,6 +24,9 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
+          create: (cxt) => Auth(),
+        ),
+        ChangeNotifierProvider(
           create: (ctx) => Products(),
         ),
         ChangeNotifierProvider(
@@ -39,12 +44,13 @@ class MyApp extends StatelessWidget {
           accentColor: Colors.deepOrange,
           primarySwatch: Colors.purple,
         ),
+        home: AuthScreen(),
         routes: {
-          '/': (ctx) => ProductsOverviewScreen(),
+          // '/': (ctx) => ProductsOverviewScreen(),
           ProductDetailScreen.routeName: (ctx) => ProductDetailScreen(),
           CartScreen.nameRoute: (ctx) => CartScreen(),
           OrderScreen.routeName: (ctx) => OrderScreen(),
-          UserProductScreen.routeName:(ctx) => UserProductScreen(),
+          UserProductScreen.routeName: (ctx) => UserProductScreen(),
           EditProductScreen.routeName: (ctx) => EditProductScreen(),
         },
       ),
