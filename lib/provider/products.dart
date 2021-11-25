@@ -6,7 +6,7 @@ import 'package:shop_app_state_management/provider/product.dart';
 import 'package:http/http.dart' as http;
 
 class Products with ChangeNotifier {
-  List<Product> _items = [
+  List<Product>? _items = [
     // Product(
     //   id: 'p1',
     //   title: 'Red Shirt',
@@ -40,12 +40,16 @@ class Products with ChangeNotifier {
     //       'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Cast-Iron-Pan.jpg/1024px-Cast-Iron-Pan.jpg',
     // ),
   ];
+
+  final String authToken;
+
+  Products(this.authToken, this._items);
   List<Product> get items {
-    return [..._items];
+    return [..._items!];
   }
 
   List<Product> get favoriteItem {
-    return _items.where((prodtitem) => prodtitem.isFavorite).toList();
+    return _items!.where((prodtitem) => prodtitem.isFavorite).toList();
   }
 
   Future<void> addProduct(Product product) async {
@@ -71,7 +75,7 @@ class Products with ChangeNotifier {
           description: product.description,
           price: product.price,
           imageUrl: product.imageUrl);
-      _items.add(newProduct);
+      _items!.add(newProduct);
       notifyListeners();
     } catch (error) {
       print(error);
@@ -81,7 +85,7 @@ class Products with ChangeNotifier {
 
   Future<void> fatchAndSetData() async {
     final url =
-        'https://shop-app22-default-rtdb.asia-southeast1.firebasedatabase.app/products.json';
+        'https://shop-app22-default-rtdb.asia-southeast1.firebasedatabase.app/products.json?auth=$authToken';
     try {
       final response = await http.get(Uri.parse(url));
       print(json.decode(response.body));
@@ -107,7 +111,7 @@ class Products with ChangeNotifier {
   }
 
   Future<void> updateProduct(String? id, Product newProduct) async {
-    final prodIndex = _items.indexWhere((product) => product.id == id);
+    final prodIndex = _items!.indexWhere((product) => product.id == id);
     if (prodIndex >= 0) {
       final url =
           'https://shop-app22-default-rtdb.asia-southeast1.firebasedatabase.app/products/$id.json';
@@ -118,7 +122,7 @@ class Products with ChangeNotifier {
             'imageUrl': newProduct.imageUrl,
             'price': newProduct.price
           }));
-      _items[prodIndex] = newProduct;
+      _items![prodIndex] = newProduct;
       notifyListeners();
     }
   }
@@ -126,21 +130,21 @@ class Products with ChangeNotifier {
   Future<void> deleteProduct(String? id) async {
     final url =
         'https://shop-app22-default-rtdb.asia-southeast1.firebasedatabase.app/products/$id.json  ';
-    final existingProductIndex = _items.indexWhere((prod) => prod.id == id);
-    Product? existingProduct = _items[existingProductIndex];
-    _items.removeAt(existingProductIndex);
+    final existingProductIndex = _items!.indexWhere((prod) => prod.id == id);
+    Product? existingProduct = _items![existingProductIndex];
+    _items!.removeAt(existingProductIndex);
     notifyListeners();
     final response = await http.delete(Uri.parse(url));
     if (response.statusCode >= 400) {
-      _items.insert(existingProductIndex, existingProduct);
+      _items!.insert(existingProductIndex, existingProduct);
       notifyListeners();
-      throw HttpException('Could not delete product');
+      throw HttpException(message: 'Could not delete product');
     } else {
       existingProduct = null;
     }
   }
 
   Product findById(String id) {
-    return _items.firstWhere((prod) => prod.id == id);
+    return _items!.firstWhere((prod) => prod.id == id);
   }
 }
