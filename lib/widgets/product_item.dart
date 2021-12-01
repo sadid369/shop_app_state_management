@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shop_app_state_management/provider/auth.dart';
 import 'package:shop_app_state_management/provider/cart.dart';
 import 'package:shop_app_state_management/provider/product.dart';
 import 'package:shop_app_state_management/screens/product_detail_screen.dart';
@@ -18,6 +19,7 @@ class ProductItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final product = Provider.of<Product>(context, listen: true);
     final cart = Provider.of<Cart>(context, listen: false);
+    final authData = Provider.of<Auth>(context);
     print('ProductItem');
     return ClipRRect(
       borderRadius: BorderRadius.circular(10),
@@ -41,7 +43,7 @@ class ProductItem extends StatelessWidget {
                 color: Theme.of(context).accentColor,
               ),
               onPressed: () {
-                product.toggleIsFavorite();
+                product.toggleIsFavorite(authData.token!, authData.userId!);
               },
             ),
           ),

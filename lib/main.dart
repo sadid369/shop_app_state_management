@@ -11,6 +11,7 @@ import 'package:shop_app_state_management/screens/order_screen.dart';
 import 'package:shop_app_state_management/screens/product_detail_screen.dart';
 import 'package:shop_app_state_management/screens/products_overview_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:shop_app_state_management/screens/splash_screen.dart';
 import 'package:shop_app_state_management/screens/user_product_screen.dart';
 
 void main() {
@@ -27,16 +28,20 @@ class MyApp extends StatelessWidget {
           create: (ctx) => Auth(),
         ),
         ChangeNotifierProxyProvider<Auth, Products>(
-          create: (context) => Products('', []),
-          update: (context, auth, previousProducts) => Products(auth.token!,
-              previousProducts == null ? [] : previousProducts.items),
+          create: (context) => Products('', [], ''),
+          update: (context, auth, previousProducts) => Products(
+              auth.token,
+              previousProducts == null ? [] : previousProducts.items,
+              auth.userId),
         ),
         ChangeNotifierProvider(
           create: (ctx) => Cart(),
         ),
-        ChangeNotifierProvider(
-          create: (ctx) => Orders(),
-        ),
+        ChangeNotifierProxyProvider<Auth, Orders>(
+          create: (context) => Orders('', [], ''),
+          update: (context, auth, previousOrders) => Orders(auth.token,
+              previousOrders == null ? [] : previousOrders.order, auth.userId),
+        )
       ],
       child: Consumer<Auth>(
         builder: (ctx, auth, _) => MaterialApp(
@@ -47,7 +52,14 @@ class MyApp extends StatelessWidget {
             accentColor: Colors.deepOrange,
             primarySwatch: Colors.purple,
           ),
-          home: auth.isAuth ? ProductsOverviewScreen() : AuthScreen(),
+          home: auth.isAuth
+              ? ProductsOverviewScreen()
+              : FutureBuilder(
+                  future: auth.tryAutoLogin(),
+                  builder: (ctx, snapShotData) =>
+                      snapShotData.connectionState == ConnectionState.waiting
+                          ? SplashScreen()
+                          : AuthScreen()),
           routes: {
             ProductsOverviewScreen.routeName: (ctx) => ProductsOverviewScreen(),
             ProductDetailScreen.routeName: (ctx) => ProductDetailScreen(),

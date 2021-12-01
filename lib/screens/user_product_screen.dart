@@ -8,43 +8,51 @@ import 'package:shop_app_state_management/widgets/user_product.dart';
 class UserProductScreen extends StatelessWidget {
   static const routeName = 'user-product-screen';
   Future<void> refreshProduct(BuildContext context) async {
-    await Provider.of<Products>(context).fatchAndSetData();
+    await Provider.of<Products>(context, listen: false).fatchAndSetData(true);
   }
 
   @override
   Widget build(BuildContext context) {
-    final productData = Provider.of<Products>(context);
+    // final productData = Provider.of<Products>(context);
     return Scaffold(
-      drawer: AppDrawer(),
-      appBar: AppBar(
-        title: Text('Edit Product'),
-        actions: [
-          IconButton(
-            onPressed: () {
-              Navigator.of(context).pushNamed(EditProductScreen.routeName);
-            },
-            icon: Icon(Icons.add),
-          ),
-        ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          await refreshProduct(context);
-        },
-        child: ListView.builder(
-          itemBuilder: (ctx, i) => Column(
-            children: [
-              UserProduct(
-                id: productData.items[i].id,
-                title: productData.items[i].title,
-                imageUrl: productData.items[i].imageUrl,
-              ),
-              Divider(),
-            ],
-          ),
-          itemCount: productData.items.length,
+        drawer: AppDrawer(),
+        appBar: AppBar(
+          title: Text('Edit Product'),
+          actions: [
+            IconButton(
+              onPressed: () {
+                Navigator.of(context).pushNamed(EditProductScreen.routeName);
+              },
+              icon: Icon(Icons.add),
+            ),
+          ],
         ),
-      ),
-    );
+        body: FutureBuilder(
+          future: refreshProduct(context),
+          builder: (ctx, spanpShotData) =>
+              spanpShotData.connectionState == ConnectionState.waiting
+                  ? Center(
+                      child: CircularProgressIndicator(),
+                    )
+                  : RefreshIndicator(onRefresh: () async {
+                      await refreshProduct(context);
+                    }, child: Consumer<Products>(
+                      builder: (context, productData, child) {
+                        return ListView.builder(
+                          itemBuilder: (ctx, i) => Column(
+                            children: [
+                              UserProduct(
+                                id: productData.items[i].id,
+                                title: productData.items[i].title,
+                                imageUrl: productData.items[i].imageUrl,
+                              ),
+                              Divider(),
+                            ],
+                          ),
+                          itemCount: productData.items.length,
+                        );
+                      },
+                    )),
+        ));
   }
 }
